@@ -16,18 +16,19 @@ NordVpnController::NordVpnController(QObject *parent)
     }
 }
 
-void NordVpnController::nordvpnCommand(const QStringList &params)
+QString NordVpnController::nordvpnCommand(const QStringList &params)
 {
     QProcess p;
     p.start("nordvpn", params);
     p.waitForFinished(1000);
+
+    return p.readAllStandardOutput();
 }
 
 void NordVpnController::update()
 {
-    nordvpnCommand(QStringList{"status"});
+    QString status = nordvpnCommand(QStringList{"status"});
 
-    QString status = QString(p.readAllStandardOutput());
     emit updateStatus(status);
 
     if (status.contains("Status: Connected")) {

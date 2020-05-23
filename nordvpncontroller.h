@@ -21,7 +21,7 @@ signals:
     void connected();
 
 private:
-    void nordvpnCommand(const QStringList& params);
+    QString nordvpnCommand(const QStringList& params);
 };
 
 #endif // NORDVPNCONTROLLER_H
