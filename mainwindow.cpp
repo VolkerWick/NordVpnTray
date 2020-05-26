@@ -20,9 +20,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu* contextMenu = new QMenu(this);
 
+    QMenu* locationsMenu = contextMenu->addMenu("Locations...");
+    for (const QString& country: nordVpnController->countries()) {
+        QMenu* countryMenu = locationsMenu->addMenu(country);
+        for (const QString& city : nordVpnController->cities(country)) {
+            countryMenu->addAction(city, [=]() { nordVpnController->vpnConnect(country, city); });
+        }
+    }
+
+    contextMenu->addSeparator();
+
     contextMenu->addAction("Connect", [=]() { nordVpnController->vpnConnect(); });
     contextMenu->addAction("Disconnect", [=]() { nordVpnController->vpnDisconnect(); });
+
     contextMenu->addSeparator();
+
     contextMenu->addAction("Exit", []() { qApp->exit(); });
 
     trayIcon->setContextMenu(contextMenu);

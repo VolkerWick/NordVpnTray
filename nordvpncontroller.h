@@ -2,6 +2,8 @@
 #define NORDVPNCONTROLLER_H
 
 #include <QObject>
+#include <QMap>
+#include <QList>
 
 class QProcess;
 
@@ -14,6 +16,10 @@ public:
     void update();
     void vpnConnect();
     void vpnDisconnect();
+    void vpnConnect(const QString& country, const QString& city);
+
+    QList<QString> countries() const { return locations.keys(); }
+    QList<QString> cities(const QString& country) const { return locations[country]; }
 
 signals:
     void updateStatus(const QString& status);
@@ -22,6 +28,8 @@ signals:
 
 private:
     QString nordvpnCommand(const QStringList& params);
+
+    QMap<QString, QStringList> locations;
 };
 
 #endif // NORDVPNCONTROLLER_H
