@@ -5,7 +5,6 @@
 
 class NordVpnController;
 class QSystemTrayIcon;
-class QTimer;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,6 +22,5 @@ private:
     Ui::MainWindow *ui;
     NordVpnController* nordVpnController;
     QSystemTrayIcon* trayIcon;
-    QTimer* timer;
 };
 #endif // MAINWINDOW_H

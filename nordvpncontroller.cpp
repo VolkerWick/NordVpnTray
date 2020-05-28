@@ -2,6 +2,7 @@
 
 #include <QProcess>
 #include <QRegularExpression>
+#include <QTimer>
 
 #include <system_error>
 
@@ -9,6 +10,7 @@ const QRegularExpression splitter("[\\s,-]");
 
 NordVpnController::NordVpnController(QObject *parent)
     : QObject(parent)
+    , timer(new QTimer(this))
 {
     QString result = nordvpnCommand(QStringList{"--version"});
     if (result.isEmpty()) {
@@ -20,6 +22,11 @@ NordVpnController::NordVpnController(QObject *parent)
         QStringList cities = nordvpnCommand(QStringList{"cities", country}).split(splitter, QString::SkipEmptyParts);
         locations.insert(country, cities);
     }
+
+    connect(timer, &QTimer::timeout, this, &NordVpnController::update);
+    timer->start(10 * 1000);
+
+    update();
 }
 
 QString NordVpnController::nordvpnCommand(const QStringList &params)

@@ -6,6 +6,7 @@
 #include <QList>
 
 class QProcess;
+class QTimer;
 
 class NordVpnController : public QObject
 {
@@ -30,6 +31,7 @@ private:
     QString nordvpnCommand(const QStringList& params);
 
     QMap<QString, QStringList> locations;
+    QTimer* timer;
 };
 
 #endif // NORDVPNCONTROLLER_H
