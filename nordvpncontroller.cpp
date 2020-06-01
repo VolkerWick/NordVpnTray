@@ -33,9 +33,22 @@ QString NordVpnController::nordvpnCommand(const QStringList &params)
 {
     QProcess p;
     p.start("nordvpn", params);
-    p.waitForFinished(2000);
+    p.waitForFinished(5000);
 
-    return p.readAllStandardOutput();
+    QString result = sanitize(p.readAllStandardOutput());
+    return result;
+}
+
+QString NordVpnController::sanitize(const QString &s)
+{
+    const QRegularExpression regex("Please update the application");
+    const QStringList src(s.split("\r"));
+    QStringList result;
+
+    std::copy_if(src.cbegin(), src.cend(), std::back_inserter(result), [=](const QString& line) {
+        return !regex.match(line).hasMatch();
+    });
+    return result.join("\r").trimmed();
 }
 
 void NordVpnController::update()

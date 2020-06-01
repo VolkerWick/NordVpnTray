@@ -5,6 +5,7 @@
 
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,11 +17,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu* contextMenu = new QMenu(this);
 
+    QSettings settings;
+    QStringList ignoredCountries = settings.value("ignoredCountries", QStringList{}).toStringList();
+
     QMenu* locationsMenu = contextMenu->addMenu("Locations...");
     for (const QString& country: nordVpnController->countries()) {
-        QMenu* countryMenu = locationsMenu->addMenu(country);
-        for (const QString& city : nordVpnController->cities(country)) {
-            countryMenu->addAction(city, [=]() { nordVpnController->vpnConnect(country, city); });
+        if (!ignoredCountries.contains(country)) {
+            QMenu* countryMenu = locationsMenu->addMenu(country);
+            for (const QString& city : nordVpnController->cities(country)) {
+                countryMenu->addAction(city, [=]() { nordVpnController->vpnConnect(country, city); });
+            }
         }
     }
 

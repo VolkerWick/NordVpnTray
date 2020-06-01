@@ -10,10 +10,15 @@ int main(int argc, char *argv[])
 {
     int result = 0;
 
+    QApplication::setOrganizationName("volkerwick");
+    QApplication::setOrganizationDomain("volkerwick.github.io");
+    QApplication::setApplicationName("NordVpnTray");
+
     QSharedMemory sharedMemory(key);
 
     if (sharedMemory.create(1)) {
         QApplication a(argc, argv);
+
         MainWindow w;
         result = a.exec();
     } else {

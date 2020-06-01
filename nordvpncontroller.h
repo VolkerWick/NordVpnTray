@@ -29,6 +29,7 @@ signals:
 
 private:
     QString nordvpnCommand(const QStringList& params);
+    static QString sanitize(const QString& s);
 
     QMap<QString, QStringList> locations;
     QTimer* timer;
