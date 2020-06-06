@@ -5,6 +5,7 @@
 
 class NordVpnController;
 class QSystemTrayIcon;
+class QAction;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,5 +23,11 @@ private:
     Ui::MainWindow *ui;
     NordVpnController* nordVpnController;
     QSystemTrayIcon* trayIcon;
+
+    bool firstDisconnectOccurred = false;
+    bool firstStatusUpdateOccurred = false;
+
+    QAction* connectAction = nullptr;
+    QAction* disconnectAction = nullptr;
 };
 #endif // MAINWINDOW_H

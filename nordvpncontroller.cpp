@@ -3,25 +3,22 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QTimer>
-
-#include <system_error>
+#include <QDebug>
 
 const QRegularExpression splitter("[\\s,-]");
 
 NordVpnController::NordVpnController(QObject *parent)
     : QObject(parent)
     , timer(new QTimer(this))
+    , process(new QProcess(this))
 {
-    QString result = nordvpnCommand(QStringList{"--version"});
-    if (result.isEmpty()) {
-        throw std::runtime_error(std::string("Please check whether nordvpn is installed!"));
-    }
+    process->setProgram("nordvpn");
 
-    QStringList countries = nordvpnCommand(QStringList{"countries"}).split(splitter, QString::SkipEmptyParts);
-    for (const QString& country : countries) {
-        QStringList cities = nordvpnCommand(QStringList{"cities", country}).split(splitter, QString::SkipEmptyParts);
-        locations.insert(country, cities);
-    }
+    connect(process, &QProcess::errorOccurred, this, &NordVpnController::errorOccurred);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NordVpnController::finished);
+
+    process->setArguments(QStringList{"--version"});
+    process->start();
 
     connect(timer, &QTimer::timeout, this, &NordVpnController::update);
     timer->start(10 * 1000);
@@ -29,59 +26,78 @@ NordVpnController::NordVpnController(QObject *parent)
     update();
 }
 
-QString NordVpnController::nordvpnCommand(const QStringList &params)
+void NordVpnController::parseStatus()
 {
-    QProcess p;
-    p.start("nordvpn", params);
-    p.waitForFinished(5000);
+    status.clear();
 
-    QString result = sanitize(p.readAllStandardOutput());
-    return result;
+    while (!process->atEnd()) {
+        QString line = process->readLine().trimmed();
+        if (line.contains(":")) {
+            QStringList kvp = line.split(": ");
+            status[kvp.first()] = kvp.last();
+        }
+    }
+
+    QString connectionStatus = status["Status"];
+
+    if (connectionStatus == "Connected") {
+        emit connected();
+    } else if (connectionStatus == "Disconnected") {
+        emit disconnected();
+    }
+
+    emit updateStatus(status);
 }
 
-QString NordVpnController::sanitize(const QString &s)
+QString NordVpnController::getNordVpnVersion() const
 {
-    const QRegularExpression regex("Please update the application");
-    const QStringList src(s.split("\r"));
-    QStringList result;
-
-    std::copy_if(src.cbegin(), src.cend(), std::back_inserter(result), [=](const QString& line) {
-        return !regex.match(line).hasMatch();
-    });
-    return result.join("\r").trimmed();
+    return nordVpnVersion;
 }
 
 void NordVpnController::update()
 {
-    QString status = nordvpnCommand(QStringList{"status"});
-
-    emit updateStatus(status);
-
-    if (status.contains("Status: Connected")) {
-        emit connected();
-    } else {
-        emit disconnected();
-    }
-
+    process->setArguments(QStringList{"status"});
+    process->start();
+    process->waitForFinished();
 }
 
 void NordVpnController::vpnConnect()
 {
-    nordvpnCommand(QStringList{"connect"});
-    update();
+    process->setArguments(QStringList{"connect"});
+    process->start();
+    process->waitForFinished();
 }
 
 void NordVpnController::vpnDisconnect()
 {
-    nordvpnCommand(QStringList{"disconnect"});
-    update();
-}
-
-void NordVpnController::vpnConnect(const QString &country, const QString &city)
-{
-    nordvpnCommand(QStringList{"connect", country, city});
-    update();
+    process->setArguments(QStringList{"disconnect"});
+    process->start();
+    process->waitForFinished();
 }
 
 
+void NordVpnController::errorOccurred(QProcess::ProcessError error) {
+    qWarning() << "Error occurred." << process->program() << process->arguments() << error << process->errorString();
+}
 
+void NordVpnController::finished(int exitCode, QProcess::ExitStatus exitStatus) {
+
+    if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
+
+        QString arg = process->arguments().first();
+
+        if (arg == "--version") {
+
+            nordVpnVersion =  process->readAllStandardOutput();
+
+            process->setArguments(QStringList{"status"});
+            process->start();
+            process->waitForFinished();
+
+        } else if (arg == "status") {
+
+            parseStatus();
+
+        }
+    }
+}

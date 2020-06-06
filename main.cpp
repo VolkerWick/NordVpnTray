@@ -4,7 +4,7 @@
 #include <QSharedMemory>
 #include <QDebug>
 
-const auto key = "41e7e4c2-56c7-44bf-b7a7-fb291c059084";
+const auto key = "ad11d1a8-332f-4a83-8ee7-e00fdb87f2fd";
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         MainWindow w;
         result = a.exec();
     } else {
-        qInfo() << qAppName() << "is already running. No need to run again.";
+        qInfo() << "NordVpnTray is already running. No need to run again.";
     }
 
     sharedMemory.detach();

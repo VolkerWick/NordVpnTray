@@ -3,9 +3,8 @@
 
 #include <QObject>
 #include <QMap>
-#include <QList>
+#include <QProcess>
 
-class QProcess;
 class QTimer;
 
 class NordVpnController : public QObject
@@ -17,22 +16,25 @@ public:
     void update();
     void vpnConnect();
     void vpnDisconnect();
-    void vpnConnect(const QString& country, const QString& city);
 
-    QList<QString> countries() const { return locations.keys(); }
-    QList<QString> cities(const QString& country) const { return locations[country]; }
+    QString getNordVpnVersion() const;
 
 signals:
-    void updateStatus(const QString& status);
+    void updateStatus(const QMap<QString, QString>& status);
     void disconnected();
     void connected();
 
-private:
-    QString nordvpnCommand(const QStringList& params);
-    static QString sanitize(const QString& s);
+private slots:
+    void errorOccurred(QProcess::ProcessError);
+    void finished(int, QProcess::ExitStatus);
 
-    QMap<QString, QStringList> locations;
+private:
+    void parseStatus();
+
     QTimer* timer;
+    QProcess* process;
+    QString nordVpnVersion;
+    QMap<QString, QString> status;
 };
 
 #endif // NORDVPNCONTROLLER_H
