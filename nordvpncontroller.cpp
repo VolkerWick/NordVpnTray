@@ -61,9 +61,13 @@ void NordVpnController::update()
     process->waitForFinished();
 }
 
-void NordVpnController::vpnConnect()
+void NordVpnController::vpnConnect(const QString& destination)
 {
-    process->setArguments(QStringList{"connect"});
+    QStringList args{ "connect" };
+    if (!destination.isEmpty()) {
+        args << destination;
+    }
+    process->setArguments(args);
     process->start();
     process->waitForFinished();
 }

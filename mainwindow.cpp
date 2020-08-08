@@ -18,6 +18,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu* contextMenu = new QMenu(this);
 
+    for (auto destination : QStringList{"de", "ch", "be", "uk", "us"}) {
+        contextMenu->addAction(destination, [=]() { nordVpnController->vpnConnect(destination); });
+    }
+
+    contextMenu->addSeparator();
+
     connectAction = contextMenu->addAction("Connect", [=]() { nordVpnController->vpnConnect(); });
     connectAction->setEnabled(false);
 

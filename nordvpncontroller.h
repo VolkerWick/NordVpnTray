@@ -14,7 +14,7 @@ public:
     explicit NordVpnController(QObject *parent = nullptr);
 
     void update();
-    void vpnConnect();
+    void vpnConnect(const QString& destination = "");
     void vpnDisconnect();
 
     QString getNordVpnVersion() const;
