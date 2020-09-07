@@ -5,7 +5,6 @@
 #include <QTimer>
 #include <QDebug>
 
-const QRegularExpression splitter("[\\s,-]");
 
 NordVpnController::NordVpnController(QObject *parent)
     : QObject(parent)
@@ -33,8 +32,13 @@ void NordVpnController::parseStatus()
     while (!process->atEnd()) {
         QString line = process->readLine().trimmed();
         if (line.contains(":")) {
-            QStringList kvp = line.split(": ");
-            status[kvp.first()] = kvp.last();
+            const QStringList kvp = line.split(": ");
+
+            static QRegularExpression sanitizer{"[-\\s]"};
+            QString sanitizedKey = kvp.first().trimmed().replace(sanitizer, "");
+            QString value = kvp.last().trimmed();
+
+            status[sanitizedKey] = value;
         }
     }
 

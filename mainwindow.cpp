@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu* contextMenu = new QMenu(this);
 
-    for (auto destination : QStringList{"de", "ch", "be", "uk", "us"}) {
+    for (auto destination : QStringList{"de", "ch", "be", "uk", "us", "the_americas"}) {
         contextMenu->addAction(destination, [=]() { nordVpnController->vpnConnect(destination); });
     }
 
